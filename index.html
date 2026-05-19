@@ -1,0 +1,1692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ride</title>
+<style>
+  :root {
+    --bg: #0a0e14;
+    --surface: #131922;
+    --surface-2: #1c2533;
+    --border: #232f42;
+    --text: #f5f7fa;
+    --text-dim: #8a9bb4;
+    --text-faint: #4a5b73;
+    --accent: #ff6a3d;
+    --good: #4ade80;
+    --bad: #f87171;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", system-ui, sans-serif;
+    font-feature-settings: "tnum";
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 64px;
+  }
+  .wordmark {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .wordmark .dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  .unit-toggle { display: flex; gap: 2px; font-size: 12px; }
+  .unit-toggle button {
+    background: none;
+    border: none;
+    color: var(--text-faint);
+    padding: 4px 10px;
+    cursor: pointer;
+    font: inherit;
+    border-radius: 4px;
+  }
+  .unit-toggle button.active { color: var(--text); background: var(--surface); }
+
+  .hero { margin-bottom: 48px; }
+  .hero .eyebrow {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+    letter-spacing: 0.01em;
+  }
+  .hero .number {
+    font-size: clamp(64px, 14vw, 104px);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .hero .number .unit {
+    font-size: 0.3em;
+    color: var(--text-dim);
+    font-weight: 400;
+    margin-left: 10px;
+    letter-spacing: 0;
+  }
+  .hero .delta {
+    font-size: 14px;
+    color: var(--text-dim);
+    margin-bottom: 32px;
+  }
+  .hero .delta.up { color: var(--good); }
+  .hero .delta.down { color: var(--bad); }
+  .hero .cta {
+    background: var(--accent);
+    color: #0a0e14;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: -0.005em;
+    transition: transform 0.08s, background 0.1s;
+  }
+  .hero .cta:hover { background: #ff8159; }
+  .hero .cta:active { transform: scale(0.97); }
+
+  .pr-banner {
+    background: linear-gradient(90deg, rgba(255,106,61,0.14), rgba(255,106,61,0));
+    border-left: 2px solid var(--accent);
+    padding: 14px 16px;
+    margin-bottom: 40px;
+    border-radius: 2px;
+    display: none;
+  }
+  .pr-banner.show { display: block; }
+  .pr-banner .label {
+    font-size: 11px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+  .pr-banner .text { font-size: 14px; color: var(--text); }
+  .pr-banner .dismiss {
+    float: right;
+    background: none;
+    border: none;
+    color: var(--text-faint);
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: -4px;
+    line-height: 1;
+  }
+  .pr-banner .dismiss:hover { color: var(--text); }
+
+  .secondary {
+    display: flex;
+    gap: 40px;
+    margin-bottom: 56px;
+    flex-wrap: wrap;
+  }
+  .secondary .stat {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .secondary .stat strong {
+    color: var(--text);
+    font-weight: 600;
+    font-size: 18px;
+    display: block;
+    letter-spacing: -0.01em;
+    margin-bottom: 2px;
+  }
+
+  .section { margin-bottom: 40px; }
+  .section h2 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-faint);
+    font-weight: 600;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .section h2 button {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 12px;
+    cursor: pointer;
+    font-family: inherit;
+    text-transform: none;
+    letter-spacing: 0;
+    padding: 0;
+  }
+  .section h2 button:hover { color: var(--text); }
+
+  .chart-wrap {
+    display: none;
+    background: var(--surface);
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+  }
+  .chart-wrap.open { display: block; }
+  .chart-tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+  .chart-tabs button {
+    background: none;
+    border: none;
+    color: var(--text-faint);
+    padding: 5px 10px;
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  .chart-tabs button.active { color: var(--text); background: var(--surface-2); }
+  svg.chart { width: 100%; height: 200px; display: block; }
+
+  .rides .ride {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    gap: 16px;
+  }
+  .rides .ride:last-child { border-bottom: none; }
+  .rides .ride { cursor: pointer; }
+  .rides .ride:hover { background: rgba(255,255,255,0.02); }
+  .rides .ride .name { font-size: 15px; font-weight: 500; }
+  .rides .ride .meta {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 3px;
+  }
+  .rides .ride .value {
+    text-align: right;
+    font-size: 15px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    padding-right: 36px;
+  }
+  .rides .ride .value small {
+    display: block;
+    font-size: 11px;
+    color: var(--text-faint);
+    font-weight: 400;
+    margin-top: 2px;
+  }
+  .rides .ride .delete {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    color: var(--text-faint);
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    opacity: 0;
+    transition: opacity 0.15s, background 0.1s, color 0.1s;
+  }
+  .rides .ride:hover .delete, .rides .ride:focus-within .delete { opacity: 1; }
+  .rides .ride .delete:hover { background: var(--surface-2); color: var(--text); }
+
+  .body-current {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .stat-card {
+    background: var(--surface);
+    padding: 16px;
+    border-radius: 10px;
+  }
+  .stat-card .label {
+    font-size: 11px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .stat-card .value {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .stat-card .value small {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-weight: 400;
+    margin-left: 3px;
+  }
+  .stat-card .delta {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+  .stat-card .delta.up { color: var(--good); }
+  .stat-card .delta.down { color: var(--bad); }
+
+  .body-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .body-actions button {
+    background: var(--surface-2);
+    color: var(--text);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .body-actions button:hover { background: #2a3548; }
+
+  .body-log .entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    cursor: pointer;
+    gap: 16px;
+  }
+  .body-log .entry:last-child { border-bottom: none; }
+  .body-log .entry:hover { background: rgba(255,255,255,0.02); }
+  .body-log .entry .date-col {
+    font-size: 13px;
+    color: var(--text-dim);
+    min-width: 80px;
+  }
+  .body-log .entry .values { font-size: 14px; flex: 1; padding-right: 36px; }
+  .body-log .entry .values .val { margin-right: 14px; color: var(--text-dim); }
+  .body-log .entry .values .val strong { color: var(--text); font-weight: 500; }
+  .body-log .entry .delete {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    color: var(--text-faint);
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .body-log .entry:hover .delete, .body-log .entry:focus-within .delete { opacity: 1; }
+  .body-log .entry .delete:hover { background: var(--surface-2); color: var(--text); }
+
+  .footer-menu {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 20px;
+    font-size: 12px;
+  }
+  .footer-menu button {
+    background: none;
+    border: none;
+    color: var(--text-faint);
+    cursor: pointer;
+    font: inherit;
+    padding: 0;
+  }
+  .footer-menu button:hover { color: var(--text-dim); }
+
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 100;
+  }
+  .modal-backdrop.open { display: flex; }
+  @media (min-width: 640px) {
+    .modal-backdrop { align-items: center; padding: 20px; }
+  }
+  .modal {
+    background: var(--surface);
+    width: 100%;
+    max-width: 520px;
+    border-radius: 16px 16px 0 0;
+    padding: 24px;
+    max-height: 92vh;
+    overflow-y: auto;
+    position: relative;
+  }
+  @media (min-width: 640px) { .modal { border-radius: 16px; } }
+  .modal h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 24px;
+    letter-spacing: -0.01em;
+  }
+  .modal .close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+  }
+  .modal .close:hover { background: var(--surface-2); color: var(--text); }
+  form .field { margin-bottom: 14px; }
+  form .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  form label {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    display: block;
+  }
+  form input, form select, form textarea {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid transparent;
+    color: var(--text);
+    padding: 11px 12px;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 14px;
+  }
+  form input:focus, form select:focus, form textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  form textarea { resize: vertical; min-height: 64px; }
+  form .submit {
+    background: var(--accent);
+    color: #0a0e14;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 999px;
+    font: inherit;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 8px;
+  }
+  form .submit:hover { background: #ff8159; }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--surface-2);
+    color: var(--text);
+    padding: 12px 20px;
+    border-radius: 999px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 200;
+    pointer-events: none;
+    max-width: calc(100% - 32px);
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+  }
+  .toast button {
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-weight: 600;
+    cursor: pointer;
+    font: inherit;
+    padding: 0;
+  }
+  .toast button:hover { color: #ff8159; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wordmark"><span class="dot"></span>Ride</div>
+  <div class="unit-toggle" role="group" aria-label="Units">
+    <button id="unit-km" class="active">km</button>
+    <button id="unit-mi">mi</button>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="eyebrow" id="hero-eyebrow">This week</div>
+  <div class="number"><span id="hero-number">0</span><span class="unit" id="hero-unit">km</span></div>
+  <div class="delta" id="hero-delta">Log your first ride to get started.</div>
+  <button class="cta" id="log-ride-btn">Log a ride</button>
+</section>
+
+<div class="pr-banner" id="pr-banner">
+  <button class="dismiss" id="pr-dismiss" aria-label="Dismiss">×</button>
+  <div class="label">Personal record</div>
+  <div class="text" id="pr-text"></div>
+</div>
+
+<section class="secondary" id="secondary-stats"></section>
+
+<section class="section rides" id="recent-section" style="display:none;">
+  <h2>Recent rides <button id="toggle-chart">Show progress</button></h2>
+  <div class="chart-wrap" id="chart-wrap">
+    <div class="chart-tabs" id="chart-tabs">
+      <button data-metric="distance" class="active">Distance</button>
+      <button data-metric="speed">Speed</button>
+      <button data-metric="duration">Duration</button>
+      <button data-metric="elevation">Elevation</button>
+      <button data-metric="power">Power</button>
+      <button data-metric="np">NP</button>
+    </div>
+    <svg class="chart" id="chart" viewBox="0 0 600 200" preserveAspectRatio="none"></svg>
+  </div>
+  <div id="ride-list"></div>
+</section>
+
+<section class="section" id="body-section">
+  <h2>You</h2>
+  <div class="body-current" id="body-current"></div>
+  <div class="body-actions">
+    <button id="log-body-btn">Log measurement</button>
+    <button id="edit-ftp-btn">Set FTP</button>
+  </div>
+  <div class="body-log" id="body-log"></div>
+</section>
+
+<div class="footer-menu">
+  <button id="export-btn">Export</button>
+  <button id="import-btn">Import file</button>
+  <button id="clear-btn">Clear all</button>
+  <input type="file" id="import-file" accept=".json,.gpx,.tcx" multiple style="display:none;" />
+</div>
+
+<div class="modal-backdrop" id="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal">
+    <button class="close" id="modal-close" aria-label="Close">×</button>
+    <h2 id="modal-title">Log a ride</h2>
+    <form id="ride-form">
+      <div class="field">
+        <label for="name">Where did you ride?</label>
+        <input id="name" type="text" placeholder="Morning loop" required maxlength="200" />
+      </div>
+      <div class="field-row">
+        <div>
+          <label for="date">Date</label>
+          <input id="date" type="date" required />
+        </div>
+        <div>
+          <label for="type">Type</label>
+          <select id="type">
+            <option>Road</option>
+            <option>Gravel</option>
+            <option>MTB</option>
+            <option>Commute</option>
+            <option>Indoor</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div>
+          <label for="distance">Distance (<span class="unit-label">km</span>)</label>
+          <input id="distance" type="number" step="0.01" min="0" required />
+        </div>
+        <div>
+          <label for="duration">Time</label>
+          <input id="duration" type="text" inputmode="numeric" placeholder="1:30:00 or 90" required />
+        </div>
+      </div>
+      <div class="field-row">
+        <div>
+          <label for="elevation">Climbing (<span class="elev-unit">m</span>)</label>
+          <input id="elevation" type="number" step="1" min="0" />
+        </div>
+        <div>
+          <label for="heartrate">Avg HR (bpm)</label>
+          <input id="heartrate" type="number" step="1" min="0" max="250" />
+        </div>
+      </div>
+      <div class="field-row">
+        <div>
+          <label for="avgpower">Avg power (W)</label>
+          <input id="avgpower" type="number" step="1" min="0" max="2000" />
+        </div>
+        <div>
+          <label for="np">Normalized power (W)</label>
+          <input id="np" type="number" step="1" min="0" max="2000" />
+        </div>
+      </div>
+      <div class="field">
+        <label for="notes">Notes</label>
+        <textarea id="notes" placeholder="How did it feel?" maxlength="1000"></textarea>
+      </div>
+      <button type="submit" class="submit" id="form-submit">Save ride</button>
+    </form>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="body-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="body-modal-title">
+  <div class="modal">
+    <button class="close" id="body-modal-close" aria-label="Close">×</button>
+    <h2 id="body-modal-title">Log measurement</h2>
+    <form id="body-form">
+      <div class="field">
+        <label for="body-date">Date</label>
+        <input id="body-date" type="date" required />
+      </div>
+      <div class="field-row">
+        <div>
+          <label for="body-weight">Weight (<span class="weight-unit">kg</span>)</label>
+          <input id="body-weight" type="number" step="0.1" min="0" max="700" />
+        </div>
+        <div>
+          <label for="body-bodyfat">Body fat (%)</label>
+          <input id="body-bodyfat" type="number" step="0.1" min="0" max="60" />
+        </div>
+      </div>
+      <div class="field">
+        <label for="body-restinghr">Resting HR (bpm)</label>
+        <input id="body-restinghr" type="number" step="1" min="0" max="200" />
+      </div>
+      <div class="field">
+        <label for="body-notes">Notes</label>
+        <textarea id="body-notes" placeholder="Anything to remember?" maxlength="1000"></textarea>
+      </div>
+      <button type="submit" class="submit" id="body-form-submit">Save</button>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span id="toast-text"></span>
+  <button id="toast-action" style="display:none;"></button>
+</div>
+
+<script>
+  const STORAGE_KEY = "cycling_tracker_v1";
+  const UNIT_KEY = "cycling_tracker_unit";
+  const BODY_KEY = "cycling_tracker_body_v1";
+  const FTP_KEY = "cycling_tracker_ftp_v1";
+  const KM_TO_MI = 0.621371;
+  const M_TO_FT = 3.28084;
+  const KG_TO_LB = 2.20462;
+  const ELEV_SMOOTH_THRESHOLD = 3;
+
+  let rides = [];
+  let body = [];
+  let ftp = null;
+  let unit = localStorage.getItem(UNIT_KEY) || "km";
+  let chartMetric = "distance";
+  let chartOpen = false;
+  let toastTimer = null;
+  let editingId = null;
+  let editingBodyId = null;
+
+  const $ = id => document.getElementById(id);
+
+  function load() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+      rides = Array.isArray(raw) ? raw.filter(r => r && typeof r === "object") : [];
+    } catch { rides = []; }
+  }
+  function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(rides)); }
+
+  function loadBody() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(BODY_KEY) || "[]");
+      body = Array.isArray(raw) ? raw.filter(b => b && typeof b === "object") : [];
+    } catch { body = []; }
+    const f = parseInt(localStorage.getItem(FTP_KEY) || "");
+    ftp = (isFinite(f) && f > 0 && f < 1000) ? f : null;
+  }
+  function saveBody() { localStorage.setItem(BODY_KEY, JSON.stringify(body)); }
+  function saveFtp() {
+    if (ftp) localStorage.setItem(FTP_KEY, String(ftp));
+    else localStorage.removeItem(FTP_KEY);
+  }
+
+  function localISO(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }
+  function todayLocalISO() { return localISO(new Date()); }
+  function parseLocalDate(iso) {
+    const [y, m, d] = iso.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  }
+  function startOfWeek(d) {
+    const dt = new Date(d);
+    dt.setHours(0, 0, 0, 0);
+    const dow = dt.getDay() || 7;
+    dt.setDate(dt.getDate() - dow + 1);
+    return dt;
+  }
+
+  function convDist(km) { return unit === "mi" ? km * KM_TO_MI : km; }
+  function convElev(m) { return unit === "mi" ? m * M_TO_FT : m; }
+  function convSpeed(kmh) { return unit === "mi" ? kmh * KM_TO_MI : kmh; }
+  function convWeight(kg) { return unit === "mi" ? kg * KG_TO_LB : kg; }
+  function distUnit() { return unit === "mi" ? "mi" : "km"; }
+  function elevUnit() { return unit === "mi" ? "ft" : "m"; }
+  function speedUnit() { return unit === "mi" ? "mph" : "km/h"; }
+  function weightUnit() { return unit === "mi" ? "lb" : "kg"; }
+
+  function fmt(n, digits = 1) {
+    if (n === undefined || n === null || !isFinite(n)) return "—";
+    return Number(n).toLocaleString(undefined, {
+      minimumFractionDigits: digits, maximumFractionDigits: digits,
+    });
+  }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  }
+  function newId() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  }
+  function clampNonneg(v) {
+    const n = Number(v);
+    if (!isFinite(n) || n < 0) return 0;
+    return n;
+  }
+
+  function parseDuration(input) {
+    if (typeof input !== "string") input = String(input ?? "");
+    const s = input.trim();
+    if (s === "") return NaN;
+    if (/^\d+(\.\d+)?$/.test(s)) return parseFloat(s);
+    const parts = s.split(":").map(p => p.trim());
+    if (parts.length < 2 || parts.length > 3) return NaN;
+    if (parts.some(p => !/^\d+(\.\d+)?$/.test(p))) return NaN;
+    const n = parts.map(parseFloat);
+    if (parts.length === 2) return n[0] * 60 + n[1];
+    return n[0] * 60 + n[1] + n[2] / 60;
+  }
+
+  function formatDuration(minutes) {
+    if (!isFinite(minutes) || minutes <= 0) return "0m";
+    const totalSec = Math.round(minutes * 60);
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const sec = totalSec % 60;
+    if (h > 0) return sec > 0 ? `${h}h ${m}m ${sec}s` : `${h}h ${m}m`;
+    if (sec > 0 && m < 10) return `${m}m ${sec}s`;
+    return `${m}m`;
+  }
+
+  function formatDurationForInput(minutes) {
+    if (!isFinite(minutes) || minutes <= 0) return "";
+    const totalSec = Math.round(minutes * 60);
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    const pad = n => String(n).padStart(2, "0");
+    if (h > 0) return `${h}:${pad(m)}:${pad(s)}`;
+    if (s > 0) return `${m}:${pad(s)}`;
+    return String(m);
+  }
+
+  function powerStats(samples) {
+    if (!samples || samples.length === 0) return { avgPower: null, np: null };
+    let sum = 0;
+    for (const p of samples) sum += p;
+    const avg = sum / samples.length;
+    let np = null;
+    if (samples.length >= 30) {
+      const rolling = [];
+      let win = 0;
+      for (let i = 0; i < samples.length; i++) {
+        win += samples[i];
+        if (i >= 30) win -= samples[i - 30];
+        if (i >= 29) rolling.push(win / 30);
+      }
+      let s4 = 0;
+      for (const p of rolling) s4 += p * p * p * p;
+      np = Math.pow(s4 / rolling.length, 0.25);
+    }
+    return {
+      avgPower: avg > 0 ? Math.round(avg) : null,
+      np: np !== null && np > 0 ? Math.round(np) : null,
+    };
+  }
+  function validateDateOrToday(s) {
+    if (typeof s !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return todayLocalISO();
+    const d = parseLocalDate(s);
+    if (isNaN(d) || d.getFullYear() < 1900 || d.getFullYear() > 2100) return todayLocalISO();
+    return s;
+  }
+
+  function ridesInRange(start, end) {
+    return rides.filter(r => {
+      const d = parseLocalDate(r.date);
+      return d >= start && d < end;
+    });
+  }
+  function weeklyStats() {
+    const start = startOfWeek(new Date());
+    const next = new Date(start); next.setDate(next.getDate() + 7);
+    const last = new Date(start); last.setDate(last.getDate() - 7);
+    const thisWk = ridesInRange(start, next);
+    const lastWk = ridesInRange(last, start);
+    return {
+      thisDist: thisWk.reduce((s,r)=>s+r.distance, 0),
+      lastDist: lastWk.reduce((s,r)=>s+r.distance, 0),
+      thisCount: thisWk.length,
+    };
+  }
+  function streakDays() {
+    if (rides.length === 0) return 0;
+    const dateSet = new Set(rides.map(r => r.date));
+    let count = 0;
+    const d = new Date(); d.setHours(0, 0, 0, 0);
+    if (!dateSet.has(localISO(d))) d.setDate(d.getDate() - 1);
+    while (dateSet.has(localISO(d))) {
+      count++;
+      d.setDate(d.getDate() - 1);
+    }
+    return count;
+  }
+  function totals() {
+    return {
+      totalKm: rides.reduce((s,r)=>s+r.distance, 0),
+      totalMin: rides.reduce((s,r)=>s+r.duration, 0),
+      count: rides.length,
+    };
+  }
+  function maxOf(arr, fn) {
+    let m = 0;
+    for (const x of arr) { const v = fn(x); if (v > m) m = v; }
+    return m;
+  }
+  function detectPRs(ride) {
+    const others = rides.filter(r => r.id !== ride.id);
+    if (others.length === 0) return null;
+    const records = [];
+    if (ride.distance > maxOf(others, r => r.distance)) records.push("longest ride");
+    const rideSpeed = ride.duration > 0 ? ride.distance / (ride.duration / 60) : 0;
+    const maxSpeed = maxOf(others, r => r.duration > 0 ? r.distance / (r.duration / 60) : 0);
+    if (ride.distance >= 10 && rideSpeed > maxSpeed) records.push("fastest pace");
+    if ((ride.elevation || 0) > maxOf(others, r => r.elevation || 0)) records.push("biggest climb");
+    return records.length > 0 ? records : null;
+  }
+
+  function renderHero() {
+    if (rides.length === 0) {
+      $("hero-eyebrow").textContent = "Welcome";
+      $("hero-number").textContent = "0";
+      $("hero-unit").textContent = distUnit();
+      $("hero-delta").textContent = "Log your first ride to get started.";
+      $("hero-delta").className = "delta";
+      return;
+    }
+    const { thisDist, lastDist, thisCount } = weeklyStats();
+    const label = thisCount === 0 ? "This week" : `This week · ${thisCount} ride${thisCount === 1 ? "" : "s"}`;
+    $("hero-eyebrow").textContent = label;
+    $("hero-number").textContent = fmt(convDist(thisDist));
+    $("hero-unit").textContent = distUnit();
+
+    if (thisDist === 0) {
+      $("hero-delta").textContent = "No rides yet this week.";
+      $("hero-delta").className = "delta";
+    } else if (lastDist === 0) {
+      $("hero-delta").textContent = "First week riding — keep it up.";
+      $("hero-delta").className = "delta up";
+    } else {
+      const delta = thisDist - lastDist;
+      const arrow = delta >= 0 ? "↑" : "↓";
+      const cls = delta >= 0 ? "up" : "down";
+      $("hero-delta").textContent = `${arrow} ${fmt(Math.abs(convDist(delta)))} ${distUnit()} vs last week`;
+      $("hero-delta").className = `delta ${cls}`;
+    }
+  }
+
+  function renderSecondary() {
+    const el = $("secondary-stats");
+    if (rides.length === 0) { el.innerHTML = ""; return; }
+    const { totalKm, totalMin, count } = totals();
+    const hours = Math.floor(totalMin / 60);
+    const mins = Math.round(totalMin % 60);
+    const streak = streakDays();
+    const avgKmh = totalMin > 0 ? totalKm / (totalMin / 60) : 0;
+
+    const powerRides = rides.filter(r => r.avgPower && r.duration > 0);
+    let weightedPower = null;
+    if (powerRides.length > 0) {
+      const num = powerRides.reduce((s, r) => s + r.avgPower * r.duration, 0);
+      const den = powerRides.reduce((s, r) => s + r.duration, 0);
+      if (den > 0) weightedPower = Math.round(num / den);
+    }
+
+    const parts = [
+      `<div class="stat"><strong>${fmt(convDist(totalKm))} ${distUnit()}</strong>All-time</div>`,
+      `<div class="stat"><strong>${count}</strong>Total rides</div>`,
+      `<div class="stat"><strong>${hours}h ${mins}m</strong>On the bike</div>`,
+      `<div class="stat"><strong>${fmt(convSpeed(avgKmh))} ${speedUnit()}</strong>Avg speed</div>`,
+    ];
+    if (weightedPower !== null) parts.push(`<div class="stat"><strong>${weightedPower} W</strong>Avg power</div>`);
+    if (streak > 1) parts.push(`<div class="stat"><strong>${streak} days</strong>Streak</div>`);
+    el.innerHTML = parts.join("");
+  }
+
+  function renderRides() {
+    const section = $("recent-section");
+    if (rides.length === 0) { section.style.display = "none"; return; }
+    section.style.display = "";
+    const sorted = [...rides].sort((a, b) => {
+      if (a.date !== b.date) return b.date.localeCompare(a.date);
+      return (b.id || "").localeCompare(a.id || "");
+    }).slice(0, 10);
+    $("ride-list").innerHTML = sorted.map(r => {
+      const speed = r.duration > 0 ? r.distance / (r.duration / 60) : 0;
+      const dateStr = parseLocalDate(r.date).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+      const elevPart = r.elevation ? ` · ${fmt(convElev(r.elevation), 0)} ${elevUnit()}` : "";
+      const hrPart = r.heartrate ? ` · ${r.heartrate} bpm` : "";
+      let powerPart = "";
+      if (r.avgPower) {
+        powerPart = ` · ${r.avgPower}W`;
+        if (r.np) powerPart += ` (NP ${r.np})`;
+        const wt = weightAtOrBefore(r.date);
+        if (wt) powerPart += ` · ${fmt(r.avgPower / wt, 1)} W/kg`;
+      } else if (r.np) {
+        powerPart = ` · NP ${r.np}W`;
+      }
+      return `
+        <div class="ride" data-id="${escapeHtml(r.id)}" tabindex="0" role="button" aria-label="Edit ride: ${escapeHtml(r.name)}">
+          <div>
+            <div class="name">${escapeHtml(r.name)}</div>
+            <div class="meta">${dateStr} · ${escapeHtml(r.type || "Ride")} · ${formatDuration(r.duration)}${elevPart}${hrPart}${powerPart}</div>
+          </div>
+          <div class="value">
+            ${fmt(convDist(r.distance))} ${distUnit()}
+            <small>${fmt(convSpeed(speed))} ${speedUnit()}</small>
+          </div>
+          <button class="delete" data-action="delete" data-id="${escapeHtml(r.id)}" aria-label="Delete ride">×</button>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function rideValue(r, metric) {
+    switch (metric) {
+      case "distance": return convDist(r.distance);
+      case "duration": return r.duration;
+      case "elevation": return convElev(r.elevation || 0);
+      case "speed": {
+        const s = r.duration > 0 ? r.distance / (r.duration / 60) : 0;
+        return convSpeed(s);
+      }
+      case "power": return r.avgPower || 0;
+      case "np": return r.np || 0;
+    }
+    return 0;
+  }
+  function metricLabel(m) {
+    return {
+      distance: `Distance (${distUnit()})`,
+      duration: "Duration (min)",
+      elevation: `Elevation (${elevUnit()})`,
+      speed: `Speed (${speedUnit()})`,
+      power: "Avg power (W)",
+      np: "Normalized power (W)",
+    }[m];
+  }
+
+  function renderChart() {
+    const svg = $("chart");
+    if (!chartOpen) return;
+    const sorted = [...rides].sort((a, b) => {
+      if (a.date !== b.date) return a.date.localeCompare(b.date);
+      return (a.id || "").localeCompare(b.id || "");
+    });
+    if (sorted.length === 0) {
+      svg.innerHTML = `<text x="300" y="100" text-anchor="middle" fill="#4a5b73" font-size="13">No rides yet</text>`;
+      return;
+    }
+    const w = 600, h = 200, pad = { l: 36, r: 12, t: 18, b: 24 };
+    const innerW = w - pad.l - pad.r, innerH = h - pad.t - pad.b;
+    const values = sorted.map(r => rideValue(r, chartMetric));
+    let maxV = 1;
+    for (const v of values) if (v > maxV) maxV = v;
+    const xStep = sorted.length > 1 ? innerW / (sorted.length - 1) : 0;
+    const points = sorted.map((r, i) => {
+      const x = pad.l + (sorted.length === 1 ? innerW / 2 : i * xStep);
+      const v = rideValue(r, chartMetric);
+      const y = pad.t + innerH - (v / maxV) * innerH;
+      return { x, y, v, date: r.date };
+    });
+    const pathD = points.map((p, i) => (i === 0 ? "M" : "L") + p.x.toFixed(1) + "," + p.y.toFixed(1)).join(" ");
+    const areaD = pathD + ` L${points[points.length-1].x.toFixed(1)},${(pad.t+innerH).toFixed(1)} L${points[0].x.toFixed(1)},${(pad.t+innerH).toFixed(1)} Z`;
+
+    let grid = "";
+    const ticks = 4;
+    for (let i = 0; i <= ticks; i++) {
+      const y = pad.t + (innerH / ticks) * i;
+      const v = maxV - (maxV / ticks) * i;
+      grid += `<line x1="${pad.l}" y1="${y.toFixed(1)}" x2="${w - pad.r}" y2="${y.toFixed(1)}" stroke="#232f42" stroke-dasharray="2,3"/>`;
+      grid += `<text x="${pad.l - 6}" y="${(y + 4).toFixed(1)}" text-anchor="end" fill="#4a5b73" font-size="10">${fmt(v, v >= 100 ? 0 : 1)}</text>`;
+    }
+    let xLabels = "";
+    const labelCount = Math.min(sorted.length, 5);
+    for (let i = 0; i < labelCount; i++) {
+      const idx = Math.round((sorted.length - 1) * (i / Math.max(1, labelCount - 1)));
+      const p = points[idx];
+      const d = parseLocalDate(sorted[idx].date);
+      xLabels += `<text x="${p.x.toFixed(1)}" y="${h - 8}" text-anchor="middle" fill="#4a5b73" font-size="10">${d.getMonth() + 1}/${d.getDate()}</text>`;
+    }
+    const dots = points.map(p =>
+      `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3" fill="#ff6a3d" stroke="#131922" stroke-width="1.5"><title>${p.date}: ${fmt(p.v, 1)}</title></circle>`
+    ).join("");
+
+    svg.innerHTML = `
+      <defs><linearGradient id="grad" x1="0" x2="0" y1="0" y2="1">
+        <stop offset="0%" stop-color="#ff6a3d" stop-opacity="0.3"/>
+        <stop offset="100%" stop-color="#ff6a3d" stop-opacity="0"/>
+      </linearGradient></defs>
+      <text x="${pad.l}" y="12" fill="#8a9bb4" font-size="10">${metricLabel(chartMetric)}</text>
+      ${grid}
+      <path d="${areaD}" fill="url(#grad)"/>
+      <path d="${pathD}" fill="none" stroke="#ff6a3d" stroke-width="2"/>
+      ${dots}
+      ${xLabels}
+    `;
+  }
+
+  function latestBodyWith(field) {
+    const sorted = [...body].sort((a, b) => b.date.localeCompare(a.date));
+    return sorted.find(b => b[field] != null) || null;
+  }
+  function previousBodyWith(field) {
+    const sorted = [...body].sort((a, b) => b.date.localeCompare(a.date));
+    let foundFirst = false;
+    for (const b of sorted) {
+      if (b[field] == null) continue;
+      if (foundFirst) return b;
+      foundFirst = true;
+    }
+    return null;
+  }
+  function weightAtOrBefore(isoDate) {
+    const target = parseLocalDate(isoDate);
+    let best = null;
+    for (const b of body) {
+      if (!b.weight) continue;
+      const d = parseLocalDate(b.date);
+      if (d <= target && (!best || parseLocalDate(best.date) < d)) best = b;
+    }
+    return best ? best.weight : null;
+  }
+
+  function renderBody() {
+    const cards = [];
+    const w = latestBodyWith("weight");
+    if (w) {
+      const prev = previousBodyWith("weight");
+      let delta = "";
+      if (prev) {
+        const d = w.weight - prev.weight;
+        if (Math.abs(d) >= 0.05) {
+          const arrow = d > 0 ? "↑" : "↓";
+          delta = `<div class="delta">${arrow} ${fmt(Math.abs(convWeight(d)), 1)} ${weightUnit()}</div>`;
+        }
+      }
+      cards.push(`<div class="stat-card"><div class="label">Weight</div><div class="value">${fmt(convWeight(w.weight), 1)}<small>${weightUnit()}</small></div>${delta}</div>`);
+    }
+    if (ftp) {
+      cards.push(`<div class="stat-card"><div class="label">FTP</div><div class="value">${ftp}<small>W</small></div></div>`);
+    }
+    const rhr = latestBodyWith("restingHr");
+    if (rhr) {
+      cards.push(`<div class="stat-card"><div class="label">Resting HR</div><div class="value">${rhr.restingHr}<small>bpm</small></div></div>`);
+    }
+    const bf = latestBodyWith("bodyFat");
+    if (bf) {
+      cards.push(`<div class="stat-card"><div class="label">Body fat</div><div class="value">${fmt(bf.bodyFat, 1)}<small>%</small></div></div>`);
+    }
+    if (w && ftp) {
+      const wkg = ftp / w.weight;
+      cards.push(`<div class="stat-card"><div class="label">FTP / kg</div><div class="value">${fmt(wkg, 2)}<small>W/kg</small></div></div>`);
+    }
+    $("body-current").innerHTML = cards.join("");
+    $("edit-ftp-btn").textContent = ftp ? "Edit FTP" : "Set FTP";
+
+    if (body.length === 0) {
+      $("body-log").innerHTML = "";
+    } else {
+      const sorted = [...body].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 10);
+      $("body-log").innerHTML = sorted.map(b => {
+        const dateStr = parseLocalDate(b.date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+        const vals = [];
+        if (b.weight) vals.push(`<span class="val"><strong>${fmt(convWeight(b.weight), 1)}</strong> ${weightUnit()}</span>`);
+        if (b.bodyFat) vals.push(`<span class="val"><strong>${fmt(b.bodyFat, 1)}</strong>% bf</span>`);
+        if (b.restingHr) vals.push(`<span class="val"><strong>${b.restingHr}</strong> rhr</span>`);
+        if (b.notes) {
+          const trimmed = b.notes.length > 40 ? b.notes.slice(0, 40) + "…" : b.notes;
+          vals.push(`<span class="val" style="font-style:italic;">${escapeHtml(trimmed)}</span>`);
+        }
+        return `
+          <div class="entry" data-id="${escapeHtml(b.id)}" tabindex="0" role="button" aria-label="Edit measurement from ${dateStr}">
+            <div class="date-col">${dateStr}</div>
+            <div class="values">${vals.join("")}</div>
+            <button class="delete" data-action="body-delete" data-id="${escapeHtml(b.id)}" aria-label="Delete">×</button>
+          </div>
+        `;
+      }).join("");
+    }
+  }
+
+  function renderAll() { renderHero(); renderSecondary(); renderRides(); renderChart(); renderBody(); }
+
+  function showToast(text, actionLabel, onAction, ms = 4500) {
+    $("toast-text").textContent = text;
+    const btn = $("toast-action");
+    if (actionLabel) {
+      btn.textContent = actionLabel;
+      btn.style.display = "";
+      btn.onclick = () => { onAction(); hideToast(); };
+    } else {
+      btn.style.display = "none";
+      btn.onclick = null;
+    }
+    $("toast").classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(hideToast, ms);
+  }
+  function hideToast() { $("toast").classList.remove("show"); clearTimeout(toastTimer); }
+
+  function openModal(editId = null) {
+    $("modal-backdrop").classList.add("open");
+    $("ride-form").reset();
+    if (editId) {
+      const r = rides.find(x => x.id === editId);
+      if (!r) { editingId = null; return; }
+      editingId = editId;
+      $("modal-title").textContent = "Edit ride";
+      $("form-submit").textContent = "Save changes";
+      $("name").value = r.name;
+      $("date").value = r.date;
+      $("type").value = r.type || "Road";
+      const distDisp = unit === "mi" ? r.distance * KM_TO_MI : r.distance;
+      $("distance").value = (Math.round(distDisp * 100) / 100).toString();
+      $("duration").value = formatDurationForInput(r.duration);
+      if (r.elevation) {
+        const elDisp = unit === "mi" ? r.elevation * M_TO_FT : r.elevation;
+        $("elevation").value = Math.round(elDisp).toString();
+      }
+      if (r.heartrate) $("heartrate").value = r.heartrate;
+      if (r.avgPower) $("avgpower").value = r.avgPower;
+      if (r.np) $("np").value = r.np;
+      if (r.notes) $("notes").value = r.notes;
+    } else {
+      editingId = null;
+      $("modal-title").textContent = "Log a ride";
+      $("form-submit").textContent = "Save ride";
+      $("date").value = todayLocalISO();
+    }
+    setTimeout(() => $("name").focus(), 80);
+  }
+  function closeModal() {
+    $("modal-backdrop").classList.remove("open");
+    $("ride-form").reset();
+    editingId = null;
+  }
+
+  function openBodyModal(editId = null) {
+    $("body-modal-backdrop").classList.add("open");
+    $("body-form").reset();
+    if (editId) {
+      const b = body.find(x => x.id === editId);
+      if (!b) { editingBodyId = null; return; }
+      editingBodyId = editId;
+      $("body-modal-title").textContent = "Edit measurement";
+      $("body-form-submit").textContent = "Save changes";
+      $("body-date").value = b.date;
+      if (b.weight) $("body-weight").value = (Math.round(convWeight(b.weight) * 10) / 10).toString();
+      if (b.bodyFat) $("body-bodyfat").value = b.bodyFat;
+      if (b.restingHr) $("body-restinghr").value = b.restingHr;
+      if (b.notes) $("body-notes").value = b.notes;
+    } else {
+      editingBodyId = null;
+      $("body-modal-title").textContent = "Log measurement";
+      $("body-form-submit").textContent = "Save";
+      $("body-date").value = todayLocalISO();
+    }
+    setTimeout(() => $("body-weight").focus(), 80);
+  }
+  function closeBodyModal() {
+    $("body-modal-backdrop").classList.remove("open");
+    $("body-form").reset();
+    editingBodyId = null;
+  }
+
+  function haversineKm(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const toRad = d => d * Math.PI / 180;
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+    return 2 * R * Math.asin(Math.sqrt(a));
+  }
+
+  function elevAccumulator() {
+    let smooth = null;
+    let gain = 0;
+    return {
+      add(ele) {
+        if (ele === null || isNaN(ele)) return;
+        if (smooth === null) { smooth = ele; return; }
+        if (ele - smooth > ELEV_SMOOTH_THRESHOLD) {
+          gain += ele - smooth;
+          smooth = ele;
+        } else if (ele < smooth) {
+          smooth = ele;
+        }
+      },
+      get() { return gain; },
+    };
+  }
+
+  function parseGpx(xmlText, filename) {
+    const doc = new DOMParser().parseFromString(xmlText, "application/xml");
+    if (doc.querySelector("parsererror")) throw new Error("Invalid GPX");
+    const trkpts = [...doc.getElementsByTagName("trkpt")];
+    if (trkpts.length < 2) throw new Error("GPX has no track");
+
+    let distance = 0;
+    let lastLat = null, lastLon = null;
+    let firstTime = null, lastTime = null;
+    const elev = elevAccumulator();
+    const powerSamples = [];
+    const hrSamples = [];
+
+    for (const pt of trkpts) {
+      const lat = parseFloat(pt.getAttribute("lat"));
+      const lon = parseFloat(pt.getAttribute("lon"));
+      if (isNaN(lat) || isNaN(lon)) continue;
+      const eleEl = pt.getElementsByTagName("ele")[0];
+      const timeEl = pt.getElementsByTagName("time")[0];
+      const ele = eleEl ? parseFloat(eleEl.textContent) : null;
+      const time = timeEl ? new Date(timeEl.textContent) : null;
+      if (lastLat !== null) distance += haversineKm(lastLat, lastLon, lat, lon);
+      elev.add(ele);
+      if (time && !isNaN(time)) {
+        if (!firstTime) firstTime = time;
+        lastTime = time;
+      }
+      const powerEls = pt.getElementsByTagNameNS("*", "power");
+      if (powerEls.length > 0) {
+        const p = parseFloat(powerEls[0].textContent);
+        if (!isNaN(p) && p >= 0 && p < 3000) powerSamples.push(p);
+      }
+      const hrEls = pt.getElementsByTagNameNS("*", "hr");
+      if (hrEls.length > 0) {
+        const h = parseFloat(hrEls[0].textContent);
+        if (!isNaN(h) && h > 0 && h < 250) hrSamples.push(h);
+      }
+      lastLat = lat; lastLon = lon;
+    }
+
+    const durationMin = firstTime && lastTime ? (lastTime - firstTime) / 60000 : 0;
+    const nameEl = doc.querySelector("trk > name") || doc.querySelector("metadata > name");
+    const name = (nameEl && nameEl.textContent.trim()) || filename.replace(/\.gpx$/i, "");
+    const { avgPower, np } = powerStats(powerSamples);
+    const avgHr = hrSamples.length > 0
+      ? Math.round(hrSamples.reduce((a,b)=>a+b, 0) / hrSamples.length)
+      : null;
+    return {
+      id: newId(),
+      name: name.slice(0, 200),
+      date: localISO(firstTime || new Date()),
+      type: "Road",
+      distance,
+      duration: durationMin,
+      elevation: Math.round(elev.get()),
+      heartrate: avgHr,
+      avgPower,
+      np,
+      notes: `Imported from ${filename}`,
+    };
+  }
+
+  function parseTcx(xmlText, filename) {
+    const doc = new DOMParser().parseFromString(xmlText, "application/xml");
+    if (doc.querySelector("parsererror")) throw new Error("Invalid TCX");
+    const activity = doc.getElementsByTagName("Activity")[0];
+    const sport = activity ? (activity.getAttribute("Sport") || "") : "";
+    const laps = [...doc.getElementsByTagName("Lap")];
+
+    let distM = 0, durS = 0, hrSum = 0, hrCount = 0;
+    for (const lap of laps) {
+      const dm = lap.getElementsByTagName("DistanceMeters")[0];
+      const tt = lap.getElementsByTagName("TotalTimeSeconds")[0];
+      const hr = lap.getElementsByTagName("AverageHeartRateBpm")[0];
+      if (dm) distM += parseFloat(dm.textContent) || 0;
+      if (tt) durS += parseFloat(tt.textContent) || 0;
+      if (hr) {
+        const v = hr.getElementsByTagName("Value")[0];
+        if (v) { hrSum += parseFloat(v.textContent) || 0; hrCount++; }
+      }
+    }
+
+    const elev = elevAccumulator();
+    const powerSamples = [];
+    for (const tp of doc.getElementsByTagName("Trackpoint")) {
+      const aEl = tp.getElementsByTagName("AltitudeMeters")[0];
+      if (aEl) {
+        const ele = parseFloat(aEl.textContent);
+        if (!isNaN(ele)) elev.add(ele);
+      }
+      const wattsEls = tp.getElementsByTagNameNS("*", "Watts");
+      if (wattsEls.length > 0) {
+        const p = parseFloat(wattsEls[0].textContent);
+        if (!isNaN(p) && p >= 0 && p < 3000) powerSamples.push(p);
+      }
+    }
+
+    const idEl = activity ? activity.getElementsByTagName("Id")[0] : null;
+    const startDate = idEl ? new Date(idEl.textContent) : new Date();
+    const sportLower = sport.toLowerCase();
+    let type = "Road";
+    if (sportLower.includes("mountain")) type = "MTB";
+    else if (sportLower.includes("indoor") || sportLower.includes("virtual")) type = "Indoor";
+    const { avgPower, np } = powerStats(powerSamples);
+
+    return {
+      id: newId(),
+      name: `${sport || "Ride"} — ${startDate.toLocaleDateString()}`.slice(0, 200),
+      date: localISO(startDate),
+      type,
+      distance: distM / 1000,
+      duration: durS / 60,
+      elevation: Math.round(elev.get()),
+      heartrate: hrCount > 0 ? Math.round(hrSum / hrCount) : null,
+      avgPower,
+      np,
+      notes: `Imported from ${filename}`,
+    };
+  }
+
+  function readFile(file) {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = e => resolve(e.target.result);
+      r.onerror = () => reject(r.error);
+      r.readAsText(file);
+    });
+  }
+
+  function sanitizeImportedRide(raw) {
+    if (!raw || typeof raw !== "object") return null;
+    const distance = clampNonneg(raw.distance);
+    const duration = clampNonneg(raw.duration);
+    if (distance === 0 && duration === 0) return null;
+    const validTypes = ["Road", "Gravel", "MTB", "Commute", "Indoor"];
+    const ap = clampNonneg(raw.avgPower);
+    const npv = clampNonneg(raw.np);
+    return {
+      id: newId(),
+      name: String(raw.name || "Imported ride").slice(0, 200),
+      date: validateDateOrToday(raw.date),
+      type: validTypes.includes(raw.type) ? raw.type : "Road",
+      distance,
+      duration,
+      elevation: Math.round(clampNonneg(raw.elevation)),
+      heartrate: raw.heartrate ? Math.round(clampNonneg(raw.heartrate)) || null : null,
+      avgPower: ap > 0 ? Math.round(ap) : null,
+      np: npv > 0 ? Math.round(npv) : null,
+      notes: String(raw.notes || "").slice(0, 1000),
+    };
+  }
+
+  function setUnit(u) {
+    unit = u;
+    localStorage.setItem(UNIT_KEY, u);
+    $("unit-km").classList.toggle("active", u === "km");
+    $("unit-mi").classList.toggle("active", u === "mi");
+    document.querySelectorAll(".unit-label").forEach(el => el.textContent = distUnit());
+    document.querySelectorAll(".elev-unit").forEach(el => el.textContent = elevUnit());
+    document.querySelectorAll(".weight-unit").forEach(el => el.textContent = weightUnit());
+    renderAll();
+  }
+
+  function postRideMessage(ride) {
+    if (rides.length === 1) return "First ride logged. Welcome.";
+    if (rides.length % 10 === 0) return `${rides.length} rides — keep rolling.`;
+    const sameDay = rides.filter(r => r.date === ride.date);
+    if (sameDay.length > 1) return "Two rides today? Strong work.";
+    const speed = ride.duration > 0 ? ride.distance / (ride.duration / 60) : 0;
+    if (speed > 30 && ride.distance > 20) return "That was quick.";
+    if (ride.distance >= 100) return "Century territory.";
+    return "Ride saved.";
+  }
+
+  $("unit-km").addEventListener("click", () => setUnit("km"));
+  $("unit-mi").addEventListener("click", () => setUnit("mi"));
+
+  $("log-ride-btn").addEventListener("click", openModal);
+  $("modal-close").addEventListener("click", closeModal);
+  $("modal-backdrop").addEventListener("click", e => {
+    if (e.target === $("modal-backdrop")) closeModal();
+  });
+  document.addEventListener("keydown", e => {
+    if (e.key !== "Escape") return;
+    if ($("modal-backdrop").classList.contains("open")) closeModal();
+    if ($("body-modal-backdrop").classList.contains("open")) closeBodyModal();
+  });
+
+  $("log-body-btn").addEventListener("click", () => openBodyModal());
+  $("body-modal-close").addEventListener("click", closeBodyModal);
+  $("body-modal-backdrop").addEventListener("click", e => {
+    if (e.target === $("body-modal-backdrop")) closeBodyModal();
+  });
+
+  $("edit-ftp-btn").addEventListener("click", () => {
+    const cur = ftp ? String(ftp) : "";
+    const v = prompt("Your FTP in watts (leave blank to clear):", cur);
+    if (v === null) return;
+    const trimmed = v.trim();
+    if (trimmed === "") {
+      ftp = null;
+      saveFtp();
+      renderAll();
+      return;
+    }
+    const n = parseInt(trimmed, 10);
+    if (!isFinite(n) || n <= 0 || n > 999) {
+      showToast("FTP must be 1–999 W.");
+      return;
+    }
+    ftp = n;
+    saveFtp();
+    renderAll();
+    showToast("FTP saved.");
+  });
+
+  $("body-form").addEventListener("submit", e => {
+    e.preventDefault();
+    const wInput = clampNonneg($("body-weight").value);
+    const weightKg = wInput > 0 ? (unit === "mi" ? wInput / KG_TO_LB : wInput) : null;
+    const bf = clampNonneg($("body-bodyfat").value);
+    const rhr = clampNonneg($("body-restinghr").value);
+    const notes = $("body-notes").value.trim().slice(0, 1000);
+    const fields = {
+      date: validateDateOrToday($("body-date").value),
+      weight: weightKg,
+      bodyFat: bf > 0 ? Math.round(bf * 10) / 10 : null,
+      restingHr: rhr > 0 ? Math.round(rhr) : null,
+      notes,
+    };
+    if (!fields.weight && !fields.bodyFat && !fields.restingHr && !fields.notes) {
+      showToast("Enter at least one value.");
+      return;
+    }
+    if (editingBodyId) {
+      const idx = body.findIndex(b => b.id === editingBodyId);
+      if (idx !== -1) {
+        body[idx] = { ...body[idx], ...fields };
+        saveBody();
+        closeBodyModal();
+        renderAll();
+        showToast("Measurement updated.");
+        return;
+      }
+      editingBodyId = null;
+    }
+    body.push({ id: newId(), ...fields });
+    saveBody();
+    closeBodyModal();
+    renderAll();
+    showToast("Measurement saved.");
+  });
+
+  $("body-log").addEventListener("click", e => {
+    const delBtn = e.target.closest("[data-action='body-delete']");
+    if (delBtn) {
+      const id = delBtn.getAttribute("data-id");
+      const idx = body.findIndex(b => b.id === id);
+      if (idx === -1) return;
+      const removed = body.splice(idx, 1)[0];
+      saveBody();
+      renderAll();
+      showToast("Measurement deleted.", "Undo", () => {
+        body.push(removed);
+        saveBody();
+        renderAll();
+      }, 6000);
+      return;
+    }
+    const row = e.target.closest(".entry[data-id]");
+    if (row) openBodyModal(row.getAttribute("data-id"));
+  });
+
+  $("body-log").addEventListener("keydown", e => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    if (!e.target.matches(".entry[data-id]")) return;
+    e.preventDefault();
+    openBodyModal(e.target.getAttribute("data-id"));
+  });
+
+  $("ride-form").addEventListener("submit", e => {
+    e.preventDefault();
+    const distInput = clampNonneg($("distance").value);
+    const distKm = unit === "mi" ? distInput / KM_TO_MI : distInput;
+    const elevInput = clampNonneg($("elevation").value);
+    const elevM = unit === "mi" ? elevInput / M_TO_FT : elevInput;
+    const hr = clampNonneg($("heartrate").value);
+    const ap = clampNonneg($("avgpower").value);
+    const npv = clampNonneg($("np").value);
+    const durMin = parseDuration($("duration").value);
+    if (!isFinite(durMin) || durMin <= 0) {
+      showToast("Enter time as 1:30:00, 90:00, or 90");
+      $("duration").focus();
+      return;
+    }
+    const fields = {
+      name: $("name").value.trim().slice(0, 200) || "Ride",
+      date: validateDateOrToday($("date").value),
+      type: $("type").value,
+      distance: distKm,
+      duration: durMin,
+      elevation: Math.round(elevM),
+      heartrate: hr > 0 ? Math.round(hr) : null,
+      avgPower: ap > 0 ? Math.round(ap) : null,
+      np: npv > 0 ? Math.round(npv) : null,
+      notes: $("notes").value.trim().slice(0, 1000),
+    };
+
+    if (editingId) {
+      const idx = rides.findIndex(r => r.id === editingId);
+      if (idx !== -1) {
+        rides[idx] = { ...rides[idx], ...fields };
+        save();
+        closeModal();
+        renderAll();
+        showToast("Ride updated.", null, null, 2500);
+        return;
+      }
+      editingId = null;
+    }
+
+    const ride = { id: newId(), ...fields };
+    rides.push(ride);
+    save();
+    closeModal();
+    renderAll();
+
+    const prs = detectPRs(ride);
+    if (prs && prs.length > 0) {
+      $("pr-text").textContent = `Your ${prs.join(" and ")} yet — ${ride.name}.`;
+      $("pr-banner").classList.add("show");
+      showToast(`New ${prs[0]}.`, null, null, 4000);
+    } else {
+      showToast(postRideMessage(ride), null, null, 3000);
+    }
+  });
+
+  $("pr-dismiss").addEventListener("click", () => $("pr-banner").classList.remove("show"));
+
+  $("ride-list").addEventListener("click", e => {
+    const delBtn = e.target.closest("[data-action='delete']");
+    if (delBtn) {
+      const id = delBtn.getAttribute("data-id");
+      const idx = rides.findIndex(r => r.id === id);
+      if (idx === -1) return;
+      const removed = rides.splice(idx, 1)[0];
+      save();
+      renderAll();
+      showToast(`Deleted "${removed.name}".`, "Undo", () => {
+        rides.push(removed);
+        save();
+        renderAll();
+      }, 6000);
+      return;
+    }
+    const row = e.target.closest(".ride[data-id]");
+    if (row) openModal(row.getAttribute("data-id"));
+  });
+
+  $("ride-list").addEventListener("keydown", e => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    if (!e.target.matches(".ride[data-id]")) return;
+    e.preventDefault();
+    openModal(e.target.getAttribute("data-id"));
+  });
+
+  $("toggle-chart").addEventListener("click", () => {
+    chartOpen = !chartOpen;
+    $("chart-wrap").classList.toggle("open", chartOpen);
+    $("toggle-chart").textContent = chartOpen ? "Hide progress" : "Show progress";
+    if (chartOpen) renderChart();
+  });
+
+  document.querySelectorAll("#chart-tabs button").forEach(b => {
+    b.addEventListener("click", () => {
+      document.querySelectorAll("#chart-tabs button").forEach(x => x.classList.remove("active"));
+      b.classList.add("active");
+      chartMetric = b.dataset.metric;
+      renderChart();
+    });
+  });
+
+  $("export-btn").addEventListener("click", () => {
+    if (rides.length === 0) { showToast("Nothing to export yet."); return; }
+    const blob = new Blob([JSON.stringify(rides, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `rides-${todayLocalISO()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  $("import-btn").addEventListener("click", () => $("import-file").click());
+  $("import-file").addEventListener("change", async e => {
+    const files = [...e.target.files];
+    e.target.value = "";
+    if (files.length === 0) return;
+    let added = 0;
+    const errors = [];
+    for (const file of files) {
+      const ext = (file.name.split(".").pop() || "").toLowerCase();
+      try {
+        const text = await readFile(file);
+        if (ext === "json") {
+          const data = JSON.parse(text);
+          if (!Array.isArray(data)) throw new Error("Expected an array of rides");
+          for (const raw of data) {
+            const r = sanitizeImportedRide(raw);
+            if (r) { rides.push(r); added++; }
+          }
+        } else if (ext === "gpx") {
+          rides.push(parseGpx(text, file.name)); added++;
+        } else if (ext === "tcx") {
+          rides.push(parseTcx(text, file.name)); added++;
+        } else {
+          errors.push(`${file.name}: unsupported`);
+        }
+      } catch (err) {
+        errors.push(`${file.name}: ${err.message}`);
+      }
+    }
+    save();
+    renderAll();
+    if (added > 0) showToast(`Imported ${added} ride${added === 1 ? "" : "s"}.`);
+    if (errors.length > 0) setTimeout(() => alert(errors.join("\n")), 500);
+  });
+
+  $("clear-btn").addEventListener("click", () => {
+    if (rides.length === 0) return;
+    const backup = [...rides];
+    rides = [];
+    save();
+    renderAll();
+    showToast(`Cleared ${backup.length} ride${backup.length === 1 ? "" : "s"}.`, "Undo", () => {
+      rides = backup;
+      save();
+      renderAll();
+    }, 8000);
+  });
+
+  load();
+  loadBody();
+  $("date").value = todayLocalISO();
+  setUnit(unit);
+</script>
+</body>
+</html>
